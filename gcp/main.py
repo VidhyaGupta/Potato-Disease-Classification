@@ -12,6 +12,11 @@ class_names = ["Early Blight", "Late Blight", "Healthy"]
 
 BUCKET_NAME = "potato-disease-model" # Here you need to put the name of your GCP bucket
 
+headers = {
+        'Access-Control-Allow-Origin': '*',                    #"http://localhost:3000
+        'Access-Control-Allow-Credentials': 'true'
+    }
+
 
 def download_blob(bucket_name, source_blob_name, destination_file_name):
     """Downloads a blob from the bucket."""
@@ -42,13 +47,12 @@ def predict(request):
 
     image = image/255 # normalize the image in 0 to 1 range
 
-    img_array = tf.expand_dims(img, 0)
+    img_array = tf.expand_dims(image, 0)
     predictions = model.predict(img_array)
 
     print("Predictions:",predictions)
 
     predicted_class = class_names[np.argmax(predictions[0])]
-    confidence = round(100 * (np.max(predictions[0])), 2)
+    confidence = float(np.max(predictions[0]))
 
-    return {"class": predicted_class, "confidence": confidence}
-
+    return ({"class": predicted_class, "confidence": confidence}, 200, headers)
