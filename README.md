@@ -1,5 +1,8 @@
 # Potato Disease Classification
 
+#### Link: https://southern-splice-345412.uc.r.appspot.com/
+
+
 ## Setup for Python:
 
 1. Install Python ([Setup instructions](https://wiki.python.org/moin/BeginnersGuide))
@@ -28,26 +31,12 @@ npm audit fix
 4. Copy `.env.example` as `.env`.
 
 5. Change API url in `.env`.
-
-## Setup for React-Native app
-
-1. Go to the [React Native environment setup](https://reactnative.dev/docs/environment-setup), then select `React Native CLI Quickstart` tab.  
-
-2. Install dependencies
+6. Run build for deployment
 
 ```bash
-cd mobile-app
-yarn install
+npm run build
 ```
 
-  - 2.1 Only for mac users
-```bash
-cd ios && pod install && cd ../
-```
-
-3. Copy `.env.example` as `.env`.
-
-4. Change API url in `.env`.
 
 ## Training the Model
 
@@ -94,11 +83,13 @@ cd api
 3. Run the TF Serve (Update config file path below)
 
 ```bash
-docker run -t --rm -p 8501:8501 -v C:/Code/potato-disease-classification:/potato-disease-classification tensorflow/serving --rest_api_port=8501 --model_config_file=/potato-disease-classification/models.config
+docker pull tensorflow/serving
+cd D:/deep-learning
+docker run -t --rm -p 8501:8501 -v D:/deep-learning/potato-disease-classification:/potato-disease-classification tensorflow/serving --rest_api_port=8501 --model_config_file=/potato-disease-classification/models.config
 ```
 
 4. Run the FastAPI Server using uvicorn
-   For this you can directly run it from your main.py or main-tf-serving.py using pycharm run option (as shown in the video tutorial)
+   For this you can directly run it from your main.py or main-tf-serving.py using pycharm run option
    OR you can run it from command prompt as shown below,
 
 ```bash
@@ -144,30 +135,22 @@ gcloud functions deploy predict_lite --runtime python38 --trigger-http --memory 
 
 8. Your model is now deployed.
 9. Use Postman to test the GCF using the [Trigger URL](https://cloud.google.com/functions/docs/calling/http).
+10. Update the API url in `.env` of frontend with Trigger URL. 
 
 Inspiration: https://cloud.google.com/blog/products/ai-machine-learning/how-to-serve-deep-learning-models-using-tensorflow-2-0-with-cloud-functions
 
-## Deploying the TF Model (.h5) on GCP
+## Deploying the React App on GCP
 
-1. Create a [GCP account](https://console.cloud.google.com/freetrial/signup/tos?_ga=2.25841725.1677013893.1627213171-706917375.1627193643&_gac=1.124122488.1627227734.Cj0KCQjwl_SHBhCQARIsAFIFRVVUZFV7wUg-DVxSlsnlIwSGWxib-owC-s9k6rjWVaF4y7kp1aUv5eQaAj2kEALw_wcB).
-2. Create a [Project on GCP](https://cloud.google.com/appengine/docs/standard/nodejs/building-app/creating-project) (Keep note of the project id).
-3. Create a [GCP bucket](https://console.cloud.google.com/storage/browser/).
-4. Upload the tf .h5 model generate in the bucket in the path `models/potato-model.h5`.
-5. Install Google Cloud SDK ([Setup instructions](https://cloud.google.com/sdk/docs/quickstarts)).
-6. Authenticate with Google Cloud SDK.
-
+1. Open the created project on GCP.
+2. Create a [GCP bucket](https://console.cloud.google.com/storage/browser/).
+3. Upload the build folder and app.yaml from the frontend folder in the bucket.
+4. Open App Engine and start application.
+5. Open Google Cloud Shell 
 ```bash
-gcloud auth login
+mkdir react-app
+gsutil rsync -r gs://react-application ./react-app
+cd react-app
+gcloud app deploy
+gcloud app browse
 ```
-
-7. Run the deployment script.
-
-```bash
-cd gcp
-gcloud functions deploy predict --runtime python38 --trigger-http --memory 512 --project project_id
-```
-
-8. Your model is now deployed.
-9. Use Postman to test the GCF using the [Trigger URL](https://cloud.google.com/functions/docs/calling/http).
-
-Inspiration: https://cloud.google.com/blog/products/ai-machine-learning/how-to-serve-deep-learning-models-using-tensorflow-2-0-with-cloud-functions
+6. Your app is now deployed.
